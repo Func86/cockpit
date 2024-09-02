@@ -1534,7 +1534,7 @@ out:
 JsonObject *
 cockpit_auth_login_finish (CockpitAuth *self,
                            GAsyncResult *result,
-                           GIOStream *connection,
+                           CockpitWebResponse *response,
                            GHashTable *headers,
                            GError **error)
 {
@@ -1543,6 +1543,9 @@ cockpit_auth_login_finish (CockpitAuth *self,
   g_return_val_if_fail (g_task_is_valid (result, self), NULL);
 
   CockpitSession *session = g_task_get_task_data (G_TASK (result));
+
+  if (response)
+    GIOStream *connection = cockpit_web_response_get_stream (response);
 
   if (!g_task_propagate_boolean (G_TASK (result), error))
     {
@@ -1580,12 +1583,14 @@ cockpit_auth_login_finish (CockpitAuth *self,
 
       if (headers)
         {
-          gboolean force_secure;
+          gboolean force_secure = FALSE;
 
           if (self->flags & COCKPIT_AUTH_FOR_TLS_PROXY)
             force_secure = TRUE;
+          else if (!connection || !G_IS_SOCKET_CONNECTION (connection))
+            force_secure = TRUE;
           else
-            force_secure = connection ? !G_IS_SOCKET_CONNECTION (connection) : TRUE;
+            force_secure = g_strcmp0 (cockpit_web_response_get_protocol (response), "https") == 0;
 
           g_autofree gchar *cookie_name = application_cookie_name (cockpit_creds_get_application (creds));
           g_autofree gchar *cookie_b64 = g_base64_encode ((guint8 *)session->cookie, strlen (session->cookie));

@@ -535,8 +535,7 @@ on_login_complete (GObject *object,
 
   g_autoptr(GError) error = NULL;
   g_autoptr(JsonObject) response_data = cockpit_auth_login_finish (COCKPIT_AUTH (object), result,
-                                                                   cockpit_web_response_get_stream (response),
-                                                                   headers, &error);
+                                                                   response, headers, &error);
 
   if (error)
     {

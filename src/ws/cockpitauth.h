@@ -85,7 +85,7 @@ void            cockpit_auth_login_async     (CockpitAuth *self,
 
 JsonObject *    cockpit_auth_login_finish    (CockpitAuth *self,
                                               GAsyncResult *result,
-                                              GIOStream *connection,
+                                              CockpitWebResponse *response,
                                               GHashTable *out_headers,
                                               GError **error);
 
